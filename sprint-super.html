@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTI — Obstacle Course Race Training</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;1,600&family=Barlow:wght@300;400;500&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0e0f0a; --surface:#131510; --card:#191c12; --border:#2a2e1c;
+  --accent:#a8c43a; --gold:#c9a84c; --red:#c05a38; --blue:#60a0c8; --purple:#a064c8;
+  --text:#ccc9b4; --text-dim:#6e6d5a; --text-bright:#e8e4d0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
+nav{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;padding:0 20px;}
+.nav-inner{max-width:860px;margin:0 auto;height:56px;display:flex;align-items:center;gap:20px;}
+.nav-logo{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;letter-spacing:.14em;color:var(--accent);text-transform:uppercase;flex-shrink:0;}
+.nav-logo span{color:var(--text-dim);font-weight:300;margin-left:6px;font-size:12px;letter-spacing:.06em;}
+.plan-tabs{display:flex;gap:4px;margin-left:auto;}
+.plan-tab{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:6px 14px;border:1px solid transparent;border-radius:3px;cursor:pointer;background:none;color:var(--text-dim);transition:all .15s;}
+.plan-tab.active{background:var(--accent);color:#0e0f0a;border-color:var(--accent);}
+.plan-tab:hover:not(.active){border-color:var(--border);color:var(--text);}
+main{max-width:860px;margin:0 auto;padding:24px 20px;}
+.plan-view{display:none;}
+.plan-view.active{display:block;}
+.plan-hero{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:20px;}
+.hero-badge{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#0e0f0a;background:var(--accent);padding:2px 8px;border-radius:2px;margin-bottom:8px;}
+.hero-name{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--text-bright);line-height:1;}
+.hero-stats{display:flex;gap:20px;flex-wrap:wrap;margin-top:10px;}
+.hero-stat{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);}
+.hero-stat strong{color:var(--gold);font-weight:400;}
+.hero-body{border-top:1px solid var(--border);padding-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px;}
+.hero-section h4{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+.hero-section ul{list-style:none;display:flex;flex-direction:column;gap:5px;}
+.hero-section ul li{font-size:12px;color:var(--text-dim);padding-left:12px;position:relative;line-height:1.4;}
+.hero-section ul li::before{content:'--';position:absolute;left:0;color:var(--border);}
+.sched-row{display:flex;gap:10px;margin-bottom:5px;}
+.sched-day{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text);min-width:90px;}
+.sched-focus{font-size:12px;color:var(--text-dim);}
+.week-nav{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.week-btn{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding:7px 16px;border:1px solid var(--border);border-radius:3px;cursor:pointer;background:var(--card);color:var(--text-dim);transition:all .15s;}
+.week-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.06);}
+.week-btn:hover:not(.active){border-color:var(--text-dim);color:var(--text);}
+.days-list{display:flex;flex-direction:column;gap:6px;}
+.day-card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;transition:border-color .15s;}
+.day-card.open{border-color:#383d26;}
+.day-header{display:flex;align-items:center;gap:14px;padding:14px 18px;cursor:pointer;user-select:none;}
+.day-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-bright);min-width:100px;}
+.day-meta{flex:1;}
+.day-session{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);display:block;margin-bottom:2px;}
+.day-obj{font-size:13px;color:var(--text-dim);}
+.day-obj em{color:var(--text);font-style:normal;}
+.day-tags{display:flex;gap:4px;flex-wrap:wrap;}
+.day-tag{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:2px 6px;border-radius:2px;}
+.tag-strength{background:rgba(168,196,58,.1);color:var(--accent);}
+.tag-run{background:rgba(96,160,200,.1);color:var(--blue);}
+.tag-mini-event{background:rgba(200,168,76,.1);color:var(--gold);}
+.tag-assessment{background:rgba(192,90,56,.1);color:var(--red);}
+.tag-grip{background:rgba(160,100,200,.1);color:var(--purple);}
+.chevron{font-size:14px;color:var(--text-dim);transition:transform .2s;flex-shrink:0;}
+.day-card.open .chevron{transform:rotate(180deg);}
+.day-body{display:none;}
+.day-card.open .day-body{display:block;}
+.ws{border-top:1px solid var(--border);padding:18px 18px;}
+.ws.warmup-bg{background:rgba(20,32,24,.45);}
+.ws.cooldown-bg{background:rgba(14,14,10,.5);}
+.ws-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;margin-bottom:12px;}
+.ws-label.lbl-warmup{color:#5a9e78;}
+.ws-label.lbl-training{color:var(--gold);}
+.ws-label.lbl-cooldown{color:var(--text-dim);}
+.block{margin-bottom:14px;}
+.block:last-child{margin-bottom:0;}
+.block-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.block-num{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);}
+.block-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-bright);}
+.block-badge{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:2px 6px;border-radius:2px;}
+.badge-amrap{background:rgba(168,196,58,.12);color:var(--accent);}
+.badge-emom{background:rgba(201,168,76,.12);color:var(--gold);}
+.badge-grind{background:rgba(192,90,56,.12);color:var(--red);}
+.badge-assess{background:rgba(192,90,56,.12);color:var(--red);}
+.badge-run{background:rgba(96,160,200,.12);color:var(--blue);}
+.badge-grip{background:rgba(160,100,200,.12);color:var(--purple);}
+.block-sub{font-size:12px;color:var(--text-dim);margin-bottom:8px;line-height:1.5;}
+.ex-list{list-style:none;display:flex;flex-direction:column;}
+.ex-list li{display:flex;align-items:baseline;gap:10px;padding:5px 0;border-bottom:1px solid rgba(42,46,28,.6);font-size:13px;}
+.ex-list li:last-child{border-bottom:none;}
+.reps{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--gold);min-width:42px;flex-shrink:0;}
+.ex-link{color:var(--text);text-decoration:none;border-bottom:1px solid rgba(168,196,58,.25);transition:color .1s,border-color .1s;}
+.ex-link:hover{color:var(--accent);border-color:var(--accent);}
+.ex-note{color:var(--text-dim);font-size:11px;}
+.record-box{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:4px;padding:10px 14px;margin:8px 0;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:8px;}
+.record-box::before{content:'*';font-size:12px;}
+.rest-line{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);padding:4px 0 4px 12px;border-left:2px solid var(--border);margin:6px 0;display:block;}
+.tip-box{background:rgba(42,46,28,.6);border-left:2px solid var(--accent);padding:8px 12px;margin:8px 0;font-size:12px;color:var(--text-dim);font-style:italic;line-height:1.5;}
+.calc-box{background:rgba(14,15,10,.8);border:1px solid var(--border);border-radius:4px;padding:12px;margin:8px 0;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);line-height:2;}
+.calc-box strong{color:var(--gold);font-weight:400;}
+.warn-box{background:rgba(192,90,56,.06);border-left:2px solid var(--red);padding:8px 12px;margin:8px 0;font-size:12px;color:var(--text-dim);font-style:italic;}
+.emom-tbl{width:100%;border-collapse:collapse;margin-top:6px;font-size:12px;}
+.emom-tbl th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text-dim);text-align:left;padding:5px 8px;border-bottom:1px solid var(--border);}
+.emom-tbl td{padding:7px 8px;border-bottom:1px solid rgba(42,46,28,.5);vertical-align:top;color:var(--text);}
+.emom-tbl tr.rest-row td{color:var(--text-dim);font-style:italic;font-size:11px;}
+.emom-tbl .rnd{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--gold);width:80px;}
+@media(max-width:600px){
+  .hero-body{grid-template-columns:1fr;}
+  .plan-tabs{gap:3px;}
+  .plan-tab{font-size:10px;padding:5px 10px;}
+  .day-tags{display:none;}
+}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">MTI <span>Obstacle Course Racing</span></div>
+    <div class="plan-tabs">
+      <button class="plan-tab active" onclick="switchPlan('sprint',this)">Spartan Sprint</button>
+      <button class="plan-tab" onclick="switchPlan('super',this)">Spartan Super</button>
+    </div>
+  </div>
+</nav>
+<main>
+  <div id="view-sprint" class="plan-view active"></div>
+  <div id="view-super" class="plan-view"></div>
+</main>
+<script>
+const B='https://fitness.mtntactical.com/exercises/details.php?id=';
+const L=(n,id)=>`<a href="${B}${id}" target="_blank" class="ex-link">${n}</a>`;
+const li=(r,n,note='')=>`<li><span class="reps">${r}</span><span>${n}${note?`<span class="ex-note"> - ${note}</span>`:''}</span></li>`;
+const tip=t=>`<div class="tip-box">${t}</div>`;
+const warn=t=>`<div class="warn-box">${t}</div>`;
+const record=t=>`<div class="record-box">${t}</div>`;
+const rest=t=>`<span class="rest-line">REST ${t}</span>`;
+const calc=h=>`<div class="calc-box">${h}</div>`;
+const blk=(num,title,badge,sub,body)=>`<div class="block"><div class="block-header"><span class="block-num">(${num})</span><span class="block-title">${title}</span>${badge?`<span class="block-badge ${badge.c}">${badge.t}</span>`:''}</div>${sub?`<div class="block-sub">${sub}</div>`:''}${body}</div>`;
+const amrap=(num,dur,items)=>blk(num,`${dur} AMRAP`,{c:'badge-amrap',t:'AMRAP'},'As Many Rounds as Possible',`<ul class="ex-list">${items}</ul>`);
+const simBlk=(num,title,items)=>blk(num,title,null,'',`<ul class="ex-list">${items}</ul>`);
+const grindBlk=(num,pct,items,calcH)=>`<div class="block"><div class="block-header"><span class="block-num">(${num})</span><span class="block-title">5 Round Grind - ${pct}%</span><span class="block-badge badge-grind">GRIND</span></div>${warn('Use your Session 1 assessment scores to calculate reps.')}<ul class="ex-list">${items}</ul>${calcH}${tip('"Grind" = work steadily, not frantically, for the prescribed rounds.')}</div>`;
+const emomBlk=(num,rows)=>`<div class="block"><div class="block-header"><span class="block-num">(${num})</span><span class="block-title">17 Rounds - EMOM</span><span class="block-badge badge-emom">EMOM</span></div><div class="block-sub">Every Minute on the Minute. Faster reps = more rest before the next round.</div><table class="emom-tbl"><thead><tr><th>Rounds</th><th>Work</th></tr></thead><tbody>${rows.map(r=>r.rest?`<tr class="rest-row"><td class="rnd">${r.rnd}</td><td>- REST -</td></tr>`:`<tr><td class="rnd">${r.rnd}</td><td>${r.work}</td></tr>`).join('')}</tbody></table></div>`;
+const runBlk=(num,dist)=>`<div class="block"><div class="block-header"><span class="block-num">(${num})</span><span class="block-title">${dist} Easy Run</span><span class="block-badge badge-run">RUN</span></div>${tip('"Easy" = you can speak in full sentences while running.')}</div><div class="block"><div class="block-header"><span class="block-num">(${parseInt(num)+1})</span><span class="block-title">Foam Roll</span></div><ul class="ex-list">${li('','Foam Roll Legs, Low Back')}</ul></div>`;
+
+function emomWork(reps){
+  const row=`${reps}x ${L('Sandbag Clean + Press','sandbag-clean--press')} @ 40/60#, ${reps}x ${L('Box Jumps','box-jumps')} @ 20", ${reps}x ${L('Burpees','burpee')}`;
+  return [{rnd:'1-5',work:row},{rnd:'6',rest:true},{rnd:'7-11',work:row},{rnd:'12',rest:true},{rnd:'13-17',work:row}];
+}
+
+const WU={
+  std3:{sets:'3 Rounds',items:`${li('5x',L('In-Place Lunges','in-place-lunge'))}${li('1x',L('Pull Up','pull-up'))}${li('5x',L('Burpees','burpee'))}${li('',L('Instep Stretch','instep-stretch'))}${li('',L('Lat + Pec Stretch','lat--pec-stretch'))}`},
+  run4:{sets:'4 Rounds',items:`${li('10x',L('Squats','squat'))}${li('10x','Push Ups')}${li('5x',L('In-Place Lunges','in-place-lunge'))}${li('','Run 100m')}${li('',L('Instep Stretch','instep-stretch'))}`},
+  db2:{sets:'2 Rounds',items:`${li('',L('Dumbbell Complex','dumbbell-complex'),'@ 15/25#')}${li('1x',L('Pull Up','pull-up'))}${li('',L('Instep Stretch','instep-stretch'))}`},
+  lb3:{sets:'3 Rounds',items:`${li('5x',L('In-Place Lunges','in-place-lunge'))}${li('5x',L('Hand Release Push Ups','hand-release-push-up'))}${li('10x',L('Squats','squat'))}${li('',L('Instep Stretch','instep-stretch'))}${li('',L('Lat + Pec Stretch','lat--pec-stretch'))}`},
+};
+const CD={
+  std:`${li('',L('Instep Stretch','instep-stretch'))}${li('',L('Lat + Pec Stretch','lat--pec-stretch'))}${li('','Foam Roll Low Back')}`,
+  run:`${li('',L('Hip Flexor Stretch','hip-flexor-stretch'))}${li('',L('Instep Stretch','instep-stretch'))}${li('',L('Pigeon Stretch','pigeon-stretch'))}`,
+  hip:`${li('',L('Hip Flexor Stretch','hip-flexor-stretch'))}${li('','Foam Roll Legs, Low Back')}`,
+};
+
+const miniEvent=()=>
+  amrap(1,'30 Min',`${li('2x',L('Sandbag Getup & Run','sandbag-getup-and-run'),'@ 40/60#')}${li('20x',L('Step Ups','step-ups'),'@ 20"')}${li('10x',L('Burpees','burpee'))}${li('',`Rope Climb or 2/4x ${L('Tarzan Pull Ups','tarzan-pull-up')}`)}`)
+  +`<div class="block"><div class="block-header"><span class="block-num">(2)</span><span class="block-title">Run 3 Miles</span><span class="block-badge badge-run">RUN</span></div></div>`
+  +amrap(3,'30 Min',`${li('5x',L('Sandbag Clean + Press','sandbag-clean--press'),'@ 40/60#')}${li('60 sec','Pull Up Bar Dead Hang - both hands')}${li('6x',L('Prone to Sprint','prone-to-sprint'))}`)
+  +`<div class="block"><div class="block-header"><span class="block-num">(4)</span><span class="block-title">Run 3 Miles</span><span class="block-badge badge-run">RUN</span></div></div>`;
+
+const gripAMRAP=()=>amrap(2,'40 Min',`${li('6x',L('Sandbag Getup','sandbag-getup'),'@ 40/60# - alternate shoulders each round')}${li('',`Rope Climb or 2/4x ${L('Tarzan Pull Ups','tarzan-pull-up')}`)}${li('6x',L('Prone to Sprint','prone-to-sprint'))}`);
+
+const lbPullup=(sets,reps)=>`${simBlk(1,`${sets}x - Leg Blasters + Pull Ups`,`${li('',L('Leg Blaster','leg-blaster'))}${li(`${reps}/${parseInt(reps)+2}x`,L('Mixed Grip Pull Ups','mixed-grip-pull-ups'))}${li('','Rest 30 Seconds')}`)}${simBlk(2,'6x - Mini Leg Blasters + Pull Ups',`${li('',L('Mini Leg Blaster','mini-leg-blaster'))}${li(`${reps}/${parseInt(reps)+2}x`,L('Mixed Grip Pull Ups','mixed-grip-pull-ups'))}${li('','Rest 30 Seconds')}`)}`;
+
+function renderDay(day){
+  const tags=day.tags.map(t=>`<span class="day-tag tag-${t.c}">${t.l}</span>`).join('');
+  const wuHTML=day.wu?`<div class="ws warmup-bg"><div class="ws-label lbl-warmup">Warm Up - ${day.wu.sets}</div><ul class="ex-list">${day.wu.items}</ul></div>`:'';
+  const trainHTML=day.training.map(t=>`<div class="ws"><div class="ws-label lbl-training">Training</div>${t}</div>`).join('');
+  const cdHTML=day.cd?`<div class="ws cooldown-bg"><div class="ws-label lbl-cooldown">Cool Down - 2 Rounds</div><ul class="ex-list">${day.cd}</ul></div>`:'';
+  return `<div class="day-card" id="${day.id}"><div class="day-header" onclick="toggle('${day.id}')"><div class="day-name">${day.day}</div><div class="day-meta"><span class="day-session">${day.session}</span><div class="day-obj"><em>${day.obj}</em></div></div><div class="day-tags">${tags}</div><span class="chevron">v</span></div><div class="day-body">${wuHTML}${trainHTML}${cdHTML}</div></div>`;
+}
+
+function renderPlan(plan){
+  const hero=`<div class="plan-hero"><span class="hero-badge">${plan.level}</span><div class="hero-name">${plan.name}</div><div class="hero-stats">${plan.stats.map(s=>`<div class="hero-stat"><strong>${s.v}</strong> ${s.l}</div>`).join('')}</div><div class="hero-body"><div class="hero-section"><h4>Weekly Schedule</h4>${plan.schedule.map(s=>`<div class="sched-row"><span class="sched-day">${s.d}</span><span class="sched-focus">${s.f}</span></div>`).join('')}</div><div class="hero-section"><h4>Required Equipment</h4><ul>${plan.equip.map(e=>`<li>${e}</li>`).join('')}</ul></div></div></div>`;
+  const wks=Object.keys(plan.weeks);
+  const nav=`<div class="week-nav" id="wknav-${plan.id}">${wks.map((w,i)=>`<button class="week-btn${i===0?' active':''}" onclick="switchWeek('${plan.id}',${w},this)">Week ${w}</button>`).join('')}</div>`;
+  const weeks=wks.map(w=>`<div id="${plan.id}-w${w}" style="display:${w===wks[0]?'block':'none'}"><div class="days-list">${plan.weeks[w].map(renderDay).join('')}</div></div>`).join('');
+  return hero+nav+weeks;
+}
+
+function toggle(id){document.getElementById(id).classList.toggle('open');}
+function switchPlan(id,btn){
+  document.querySelectorAll('.plan-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.plan-view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+}
+function switchWeek(pid,wNum,btn){
+  document.getElementById('wknav-'+pid).querySelectorAll('.week-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll(`[id^="${pid}-w"]`).forEach(el=>el.style.display='none');
+  document.getElementById(`${pid}-w${wNum}`).style.display='block';
+}
+
+const SPRINT={
+  id:'sprint',name:'Spartan Sprint',level:'Short Course',
+  stats:[{v:'3-5 Miles',l:'Distance'},{v:'20-23',l:'Obstacles'},{v:'7 Weeks',l:'Duration'}],
+  schedule:[{d:'Monday',f:'Strength, Work Capacity (20-min event)'},{d:'Tuesday',f:'1.5 Mile Run Assessment or 800m Repeats'},{d:'Wednesday',f:'Strength, Work Capacity (20-min event)'},{d:'Thursday',f:'3-5 Mile Recovery Run at an Easy Pace'},{d:'Friday',f:'60-90 Minute Multi-Modal Mini-Event'}],
+  equip:['Stopwatch / interval timer (smartphone works)','40# Sandbag (women) / 60# Sandbag (men)','15# Dumbbells (women) / 25# Dumbbells (men)','16-18" Step or bench for Step Ups','20" Plyo Box for Box Jumps','Pull Up Bar','Rope for Rope Climbs (pull up sub available)','Foam Roller'],
+  weeks:{
+    1:[
+      {id:'sp-1-mon',day:'Monday',session:'Session 1',obj:'Strength Assessment + Work Capacity',
+       tags:[{c:'assessment',l:'Assess'},{c:'strength',l:'Strength'}],wu:WU.std3,
+       training:[`<div class="block"><div class="block-header"><span class="block-num">(1)</span><span class="block-title">Strength Assessment</span><span class="block-badge badge-assess">ASSESS</span></div><ul class="ex-list">${li('90 sec',`Max Rep ${L('In-Place Lunges','in-place-lunge')}`)}</ul>${rest('3 Minutes')}<ul class="ex-list">${li('Max',`${L('Pull Ups','pull-up')} (no time limit)`)}</ul>${rest('3 Minutes')}<ul class="ex-list">${li('60 sec',`Max Rep ${L('Burpees','burpee')}`)}</ul>${record('Record all three scores - these drive your reps for the entire plan')}</div>${amrap(2,'20 Min',`${li('3x',L('Sandbag Getups','sandbag-getup'),'@ 40/60#')}${li('6x',L('40-Foot Shuttle','40-foot-shuttle-sprint'),'with Sandbag')}${li('6x',L('Situps','sit-up-6319'))}`)}
+       `],cd:CD.std},
+
+      {id:'sp-1-tue',day:'Tuesday',session:'Session 2',obj:'Endurance Assessment - Running',
+       tags:[{c:'assessment',l:'Assess'},{c:'run',l:'Run'}],wu:WU.run4,
+       training:[`<div class="block"><div class="block-header"><span class="block-num">(1)</span><span class="block-title">1.5 Mile Run for Time</span><span class="block-badge badge-assess">ASSESS</span></div><div class="block-sub">Run 1.5 miles as fast as possible. This time drives your interval paces for the rest of the plan.</div>${record('Record finish time - use MTI Running Calculator for interval paces')}</div>`]},
+
+      {id:'sp-1-wed',day:'Wednesday',session:'Session 3',obj:'Strength + Work Capacity',
+       tags:[{c:'strength',l:'Strength'},{c:'grip',l:'Grip'}],wu:WU.std3,
+       training:[`${grindBlk(1,'30',`${li('30%',`Max Rep ${L('In-Place Lunges','in-place-lunge')}`)}${li('Max','Dead Hang from Pull Up Bar')}${li('30%',`Max Rep ${L('Burpees','burpee')}`)}`,calc(`Example - Session 1: <strong>30x Lunges</strong>, <strong>23x Burpees</strong><br>30 x 0.30 = <strong>9x Lunges</strong> | Max Dead Hang | 23 x 0.30 = <strong>7x Burpees</strong> (round up)`))}${tip('"Dead Hang" - hang from the bar with both hands as long as possible. Stop when either hand releases. This is grip training.')}${amrap(2,'20 Min',`${li('3x',L('Renegade Man Makers','renegade-man-maker'),'@ 15/25#')}${li('','Run 100m with Dumbbells')}${li('5x',L('EOs','eos'))}`)}
+       `],cd:CD.std},
+
+      {id:'sp-1-thu',day:'Thursday',session:'Session 4',obj:'Endurance - Aerobic Base',
+       tags:[{c:'run',l:'Run'}],
+       training:[runBlk(1,'3 Mile')]},
+
+      {id:'sp-1-fri',day:'Friday',session:'Session 5',obj:'60-Minute Mini-Event',
+       tags:[{c:'mini-event',l:'Mini-Event'}],
+       training:[`${amrap(1,'60 Min',`${li('5x',L('Renegade Man Makers','renegade-man-maker'),'@ 15/25#')}${li('','Run 100m with Dumbbells (down 50m, back 50m)')}${li('5x',L('Sandbag Clean','sandbag-clean'),'@ 40/60#')}${li('','Run 100m with Sandbag (down 50m, back 50m)')}${li('','Run 400m Unloaded')}`)}${tip('Can be done from a gym/garage or take equipment outside to a track or park.')}`],cd:CD.run},
+    ],
+    2:[
+      {id:'sp-2-mon',day:'Monday',session:'Session 6',obj:'Strength + Work Capacity',
+       tags:[{c:'strength',l:'Strength'}],wu:WU.lb3,
+       training:[`${lbPullup(2,4)}${emomBlk(3,emomWork(4))}`],cd:CD.hip},
+
+      {id:'sp-2-tue',day:'Tuesday',session:'-',obj:'Endurance Intervals - Running',
+       tags:[{c:'run',l:'Intervals'}],wu:WU.run4,
+       training:[`<div class="block"><div class="block-header"><span class="block-num">(1)</span><span class="block-title">2x 1-Mile Intervals</span><span class="block-badge badge-run">INTERVALS</span></div><div class="block-sub">Use your Session 2 (3-Mile) time and the <a href="${B}running-calculator" target="_blank" class="ex-link">MTI Running Calculator</a> for your 1-Mile Interval Pace.</div><ul class="ex-list">${li('2x','Run 1 Mile at 1-Mile Interval Pace')}${li('','Rest 8 Minutes between efforts')}</ul></div>`],cd:CD.run},
+
+      {id:'sp-2-wed',day:'Wednesday',session:'-',obj:'Endurance - Aerobic Base',
+       tags:[{c:'run',l:'Run'}],
+       training:[runBlk(1,'6 Mile')]},
+
+      {id:'sp-2-thu',day:'Thursday',session:'-',obj:'Grip Strength + Work Capacity',
+       tags:[{c:'grip',l:'Grip'},{c:'strength',l:'Strength'}],wu:WU.db2,
+       training:[`<div class="block"><div class="block-header"><span class="block-num">(1)</span><span class="block-title">5x Gi Grip Rounds - 40%</span><span class="block-badge badge-grip">GRIP</span></div><div class="block-sub">40% of your Gi Grip Assessment score from Session 4. Rest 45 sec between rounds.</div>${calc(`Example: Gi Grip Assessment = <strong>1:40</strong> = 100 seconds<br>100 x 0.40 = <strong>40 sec per round</strong><br>Hang from Gi/towel, row every 10 sec. Rest 45 sec. 5 total rounds.`)}</div>${gripAMRAP()}`],cd:CD.std},
+
+      {id:'sp-2-fri',day:'Friday',session:'-',obj:'Endurance - Aerobic Base',
+       tags:[{c:'run',l:'Run'}],
+       training:[runBlk(1,'4 Mile')]},
+
+      {id:'sp-2-sat',day:'Saturday',session:'-',obj:'120-Minute Mini-Event',
+       tags:[{c:'mini-event',l:'Mini-Event'}],
+       training:[miniEvent()]},
+    ],
+    3:[
+      {id:'sp-3-mon',day:'Monday',session:'-',obj:'Strength + Work Capacity',
+       tags:[{c:'strength',l:'Strength'}],wu:WU.std3,
+       training:[`${grindBlk(1,'35',`${li('35%',`Max Rep ${L('In-Place Lunges','in-place-lunge')}`)}${li('35%',`Max Rep ${L('Pull Ups','pull-up')}`)}${li('35%',`Max Rep ${L('Burpees','burpee')}`)}`,calc(`Example - Session 1: <strong>30x Lunges</strong>, <strong>16x Pull Ups</strong>, <strong>23x Burpees</strong><br>30 x 0.35 = <strong>11x Lunges</strong> | 16 x 0.35 = <strong>6x Pull Ups</strong> | 23 x 0.35 = <strong>9x Burpees</strong>`))}${amrap(2,'20 Min',`${li('5x',L('Sandbag Clean + Press','sandbag-clean--press'),'@ 40/60#')}${li('','Run 200m with Sandbag')}${li('10x',L('Situps','sit-up-6319'))}`)}
+       `],cd:CD.std},
+
+      {id:'sp-3-tue',day:'Tuesday',session:'-',obj:'Endurance Intervals - Running',
+       tags:[{c:'run',l:'Intervals'}],wu:WU.run4,
+       training:[`<div class="block"><div class="block-header"><span class="block-num">(1)</span><span class="block-title">4x 800m Intervals</span><span class="block-badge badge-run">INTERVALS</span></div><div class="block-sub">Use your Session 1 (1.5-Mile) time and the <a href="${B}running-calculator" target="_blank" class="ex-link">MTI Running Calculator</a> for your 800m Interval Pace.</div><ul class="ex-list">${li('4x','Run 800m at 800m Interval Pace')}${li('','Rest 4 Minutes between efforts')}</ul></div>`],cd:CD.run},
+
+      {id:'sp-3-wed',day:'Wednesday',session:'-',obj:'Strength + Work Capacity - Grip Focus',
+       tags:[{c:'strength',l:'Strength'},{c:'grip',l:'Grip'}],wu:WU.std3,
+       training:[`${grindBlk(1,'40',`${li('40%',`Max Rep ${L('In-Place Lunges','in-place-lunge')}`)}${li('Max','Dead Hang from Pull Up Bar')}${li('40%',`Max Rep ${L('Burpees','burpee')}`)}`,calc(`Example - Session 1: <strong>30x Lunges</strong>, <strong>23x Burpees</strong><br>30 x 0.40 = <strong>12x Lunges</strong> | Max Dead Hang | 23 x 0.40 = <strong>10x Burpees</strong>`))}${amrap(2,'20 Min',`${li('3x',L('Mr. Spectacular','mr-spectacular'),'@ 15/25#')}${li('','Run 100m with Dumbbells')}${li('','Run 100m without Dumbbells')}`)}
+       `],cd:CD.std},
+
+      {id:'sp-3-thu',day:'Thursday',session:'-',obj:'Endurance - Aerobic Base',
+       tags:[{c:'run',l:'Run'}],
+       training:[runBlk(1,'4 Mile')]},
+
+      {id:'sp-3-fri',day:'Friday',session:'-',obj:'80-Minute Mini-Event',
+       tags:[{c:'mini-event',l:'Mini-Event'}],
+       training:[`${amrap(1,'Min 1-40',`${li('5x',L('Sandbag Burpee','sandbag-burpee'),'@ 40/60#')}${li('','Run 100m with Sandbag')}${li('','Run 200m Unloaded')}`)}${amrap(2,'Min 41-80',`${li('5x',L('Sandbag Getup','sandbag-getup'),'@ 40/60#')}${li('',`${L("Sandbag Hold & Farmer's Carry",'sandbag-hold-and-farmers-carry')} 50m @ 40/60# (down 25m, back 25m)`)}${li('','Run 200m Unloaded')}`)}${tip('Can be done from a gym or take equipment outside to a track or park.')}`],cd:CD.run},
+    ],
+  }
+};
+
+const SUPER={
+  id:'super',name:'Spartan Super',level:'Medium Course',
+  stats:[{v:'8-10 Miles',l:'Distance'},{v:'24-28',l:'Obstacles'},{v:'8 Weeks',l:'Duration'}],
+  schedule:[{d:'Monday',f:'Strength, Work Capacity (20-min event)'},{d:'Tuesday',f:'3 Mile Run Assessment or 1-Mile Repeats'},{d:'Wednesday',f:'5-8 Mile Aerobic Base Run'},{d:'Thursday',f:'Grip Strength, Work Capacity (40-min event)'},{d:'Friday',f:'3-6 Mile Aerobic Base Run'},{d:'Saturday',f:'90-150 Minute Multi-Modal Mini-Event'}],
+  equip:['Stopwatch / interval timer (smartphone works)','40# Sandbag (women) / 60# Sandbag (men)','15# Dumbbells (women) / 25# Dumbbells (men)','16-18" Step or bench for Step Ups','20" Plyo Box for Box Jumps','Pull Up Bar','Rope for Rope Climbs (pull up sub available)','Foam Roller'],
+  weeks:{
+    1:[
+      {id:'su-1-mon',day:'Monday',session:'Session 1',obj:'Strength + Work Capacity',
+       tags:[{c:'strength',l:'Strength'}],wu:WU.lb3,
+       training:[`${simBlk(1,'10x - Mini Leg Blasters + Pull Ups',`${li('',L('Mini Leg Blaster','mini-leg-blaster'))}${li('3/5x',L('Mixed Grip Pull Ups','mixed-grip-pull-ups'))}${li('','Rest 30 Seconds')}`)}${emomBlk(2,emomWork(3))}`],cd:CD.hip},
+
+      {id:'su-1-tue',day:'Tuesday',session:'Session 2',obj:'Endurance Assessment - Running',
+       tags:[{c:'assessment',l:'Assess'},{c:'run',l:'Run'}],wu:WU.run4,
+       training:[`<div class="block"><div class="block-header"><span class="block-num">(1)</span><span class="block-title">3 Mile Run for Time</span><span class="block-badge badge-assess">ASSESS</span></div><div class="block-sub">Run 3 miles as fast as possible. This time drives interval paces for the rest of the plan.</div>${record('Record finish time - use MTI Running Calculator for interval paces')}</div>`]},
+
+      {id:'su-1-wed',day:'Wednesday',session:'Session 3',obj:'Endurance - Aerobic Base',
+       tags:[{c:'run',l:'Run'}],
+       training:[runBlk(1,'5 Mile')]},
+
+      {id:'su-1-thu',day:'Thursday',session:'Session 4',obj:'Grip Strength + Work Capacity',
+       tags:[{c:'grip',l:'Grip'},{c:'strength',l:'Strength'}],wu:WU.db2,
+       training:[`<div class="block"><div class="block-header"><span class="block-num">(1)</span><span class="block-title">Gi Grip Assessment</span><span class="block-badge badge-assess">ASSESS</span></div><ul class="ex-list">${li('',L('Gi Grip Assessment','gi-grip-strength-assessment'))}</ul>${record('Record score in seconds - this drives grip volume for the plan')}</div><div class="block"><div class="block-header"><span class="block-num">(2)</span><span class="block-title">4x Gi Grip Rounds - 30%</span><span class="block-badge badge-grip">GRIP</span></div><div class="block-sub">30% of Gi Grip Assessment score. Rest 45 sec between rounds.</div>${calc(`Example: Gi Grip Assessment = <strong>1:40</strong> = 100 seconds<br>100 x 0.30 = <strong>30 sec per round</strong><br>Hang from Gi/towel, row every 10 sec. Rest 45 sec. 4 total rounds.`)}</div>${amrap(3,'40 Min',`${li('6x',L('Sandbag Getup','sandbag-getup'),'@ 40/60# - alternate shoulders each round')}${li('',`Rope Climb or 2/4x ${L('Tarzan Pull Ups','tarzan-pull-up')}`)}${li('6x',L('Prone to Sprint','prone-to-sprint'))}`)}
+       `],cd:CD.std},
+
+      {id:'su-1-fri',day:'Friday',session:'Session 5',obj:'Endurance - Aerobic Base',
+       tags:[{c:'run',l:'Run'}],
+       training:[runBlk(1,'3 Mile')]},
+
+      {id:'su-1-sat',day:'Saturday',session:'Session 6',obj:'90-Minute Mini-Event',
+       tags:[{c:'mini-event',l:'Mini-Event'}],
+       training:[miniEvent()]},
+    ],
+    2:[
+      {id:'su-2-mon',day:'Monday',session:'Session 7',obj:'Strength + Work Capacity',
+       tags:[{c:'strength',l:'Strength'}],wu:WU.lb3,
+       training:[`${lbPullup(2,4)}${emomBlk(3,emomWork(4))}`],cd:CD.hip},
+
+      {id:'su-2-tue',day:'Tuesday',session:'-',obj:'Endurance Intervals - Running',
+       tags:[{c:'run',l:'Intervals'}],wu:WU.run4,
+       training:[`<div class="block"><div class="block-header"><span class="block-num">(1)</span><span class="block-title">2x 1-Mile Intervals</span><span class="block-badge badge-run">INTERVALS</span></div><div class="block-sub">Use your Session 2 (3-Mile) time and the <a href="${B}running-calculator" target="_blank" class="ex-link">MTI Running Calculator</a> for your 1-Mile Interval Pace.</div><ul class="ex-list">${li('2x','Run 1 Mile at 1-Mile Interval Pace')}${li('','Rest 8 Minutes between efforts')}</ul></div>`],cd:CD.run},
+
+      {id:'su-2-wed',day:'Wednesday',session:'-',obj:'Endurance - Aerobic Base',
+       tags:[{c:'run',l:'Run'}],
+       training:[runBlk(1,'6 Mile')]},
+
+      {id:'su-2-thu',day:'Thursday',session:'-',obj:'Grip Strength + Work Capacity',
+       tags:[{c:'grip',l:'Grip'},{c:'strength',l:'Strength'}],wu:WU.db2,
+       training:[`<div class="block"><div class="block-header"><span class="block-num">(1)</span><span class="block-title">5x Gi Grip Rounds - 40%</span><span class="block-badge badge-grip">GRIP</span></div><div class="block-sub">40% of Session 4 Gi Grip score. Rest 45 sec between rounds.</div>${calc(`Example: <strong>100 sec</strong> assessment<br>100 x 0.40 = <strong>40 sec per round</strong> | Hang from Gi/towel, row every 10 sec. Rest 45 sec. 5 total rounds.`)}</div>${gripAMRAP()}`],cd:CD.std},
+
+      {id:'su-2-fri',day:'Friday',session:'-',obj:'Endurance - Aerobic Base',
+       tags:[{c:'run',l:'Run'}],
+       training:[runBlk(1,'4 Mile')]},
+
+      {id:'su-2-sat',day:'Saturday',session:'-',obj:'120-Minute Mini-Event',
+       tags:[{c:'mini-event',l:'Mini-Event'}],
+       training:[miniEvent()]},
+    ],
+  }
+};
+
+document.getElementById('view-sprint').innerHTML=renderPlan(SPRINT);
+document.getElementById('view-super').innerHTML=renderPlan(SUPER);
+</script>
+</body>
+</html>
